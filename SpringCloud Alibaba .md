@@ -193,6 +193,427 @@ cloud-provider-payment8001 微服务提供者支付
 
 
 
+##### 配置代码
+
+新建模块cloud-provider-payment8001
+
+
+
+修改pom文件
+
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.elijah.cloud</groupId>
+        <artifactId>cloud2022</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+    <artifactId>cloud-provider-payment8001</artifactId>
+    <name>cloud-provider-payment8001</name>
+    <description>cloud-provider-payment8001</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+
+
+Application.yml
+
+```yaml
+server:
+  port: 8001
+
+spring:
+  application:
+    name: cloud-payment-service
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: org.gjt.mm.mysql.Driver
+    url: jdbc:mysql://127.0.0.1:3306/db2022?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: root
+    password: mysql77&
+
+mybatis:
+  mapperLocations: classpath:mapper/*.xml
+  type-aliases-package: com.payment.entity
+```
+
+
+
+启动类
+
+```
+public class CloudProviderPayment8001Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CloudProviderPayment8001Application.class, args);
+    }
+
+}
+```
+
+
+
+##### 业务代码
+
+
+
+对于业务逻辑的开发过程,一般从前端到后端的开发
+
+vue——controller——service——dao——mysql
+
+- 建表SQL
+- entities
+- dao
+- service
+- controller
+
+
+
+###### 建表SQL
+
+```sql
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`db2022` /*!40100 DEFAULT CHARACTER SET utf8mb4 */;
+
+USE `db2022`;
+
+/*Table structure for table `t_admin` */
+
+DROP TABLE IF EXISTS `payment`;
+
+
+create table payment
+(
+	id bigint auto_increment,
+	serial varchar(200) default '' null,
+	constraint payment_pk
+		primary key (id)
+)ENGINE = InnoDB
+  auto_increment = 1
+  DEFAULT CHARSET = utf8 COMMENT ='支付表';
+
+```
+
+
+
+###### entities
+
+Payment.java
+
+```java
+package com.payment.entities;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Payment implements Serializable {
+
+    private Long id;
+    /**
+     * 流水号
+     */
+    private String serial;
+}
+```
+
+
+
+与前端交互类
+
+```java
+package com.payment.entities;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * @Author: elijah
+ * @Title: CommonResult
+ * @Description: 通过返回结果类 json 串
+ * @Date: 2022/9/16 15:22
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CommonResult<T> {
+    private Integer code;
+    private String message;
+    private T data;
+
+    public CommonResult(Integer code, String message) {
+        this(code, message, null);
+    }
+}
+```
+
+
+
+###### dao
+
+
+
+```java
+package com.payment.dao;
+
+import com.payment.entities.Payment;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+/**
+ * @Author: elijah
+ * @Title: PaymentDao
+ * @Description: 支付dao
+ * @Date: 2022/9/16 15:27
+ */
+@Mapper
+public interface PaymentDao {
+
+    /**
+     * 新增数据
+     *
+     * @param payment
+     * @return id值
+     */
+    int create(Payment payment);
+
+    /**
+     * 通过ID查找数据
+     * @param id 主键
+     * @return
+     */
+    Payment getPaymentById(@Param("id") Long id);
+}
+```
+
+
+
+mapper
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.payment.dao.PaymentDao">
+    
+    <resultMap id="BaseResultMap" type="com.payment.entities.Payment">
+        <id column="id" property="id" javaType="BIGINT"/>
+        <id column="serial" property="serial" javaType="VARCHAR"/>
+    </resultMap>
+
+    <insert id="create" parameterType="Payment" useGeneratedKeys="true" keyProperty="id">
+        insert into payment (serial) values (#{serial})
+    </insert>
+
+    <select id="getPaymentById" parameterType="Long" resultMap="BaseResultMap">
+        select * from payment where id = #{id};
+    </select>
+</mapper>
+```
+
+
+
+###### service
+
+```java
+package com.payment.service;
+
+import com.payment.entities.Payment;
+
+/**
+ *
+ * @author elijah
+ * @version 1.0
+ * @date 2022/9/16 16:50
+ */
+public interface PaymentService {
+    /**
+     * 新增数据
+     *
+     * @param payment
+     * @return id值
+     */
+    int create(Payment payment);
+
+    /**
+     * 通过ID查找数据
+     * @param id 主键
+     * @return
+     */
+    Payment getPaymentById(Long id);
+}
+```
+
+
+
+实现类
+
+```java
+package com.payment.service.impl;
+
+import com.payment.dao.PaymentDao;
+import com.payment.entities.Payment;
+import com.payment.service.PaymentService;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+
+/**
+ * @Author: elijah
+ * @Title: PaymentServiceImpl
+ * @Description:
+ * @Date: 2022/9/16 16:51
+ */
+@Service
+public class PaymentServiceImpl implements PaymentService {
+
+    @Resource
+    private PaymentDao paymentDao;
+
+    @Override
+    public int create(Payment payment) {
+        return paymentDao.create(payment);
+    }
+
+    @Override
+    public Payment getPaymentById(Long id) {
+        return paymentDao.getPaymentById(id);
+    }
+}
+```
+
+
+
+###### controller
+
+
+
+```java
+package com.payment.controller;
+
+import com.payment.entities.CommonResult;
+import com.payment.entities.Payment;
+import com.payment.service.PaymentService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+
+/**
+ * @Author: elijah
+ * @Title: PaymentController
+ * @Description:
+ * @Date: 2022/9/16 16:56
+ */
+@RestController
+@Slf4j
+public class PaymentController {
+
+    @Resource
+    private PaymentService paymentService;
+
+    @PostMapping(value = "/payment/create")
+    public CommonResult create(Payment payment){
+
+       int result = paymentService.create(payment);
+       log.info("insert result id {}", result);
+        if (result > 0) {
+            return new CommonResult(200, "insert success", payment);
+        } else {
+            return new CommonResult(444, "insert error", null);
+        }
+    }
+
+    @PostMapping(value = "/get/payment/{id}")
+    public CommonResult getPaymentById(@PathVariable("id") Long id){
+
+        Payment payment = paymentService.getPaymentById(id);
+        log.info("get result id {}", payment);
+        if (payment != null) {
+            return new CommonResult(200, "select success", payment);
+        } else {
+            return new CommonResult(404, "select is null", null);
+        }
+    }
+}
+```
+
+
+
 
 
 
@@ -220,3 +641,10 @@ http://p8t8qct2x.bkt.clouddn.com/624901110-58B4648802276393.mp4?e=1662106528&tok
 
 
 http://p8t8qct2x.bkt.clouddn.com/624901110-35C3F017D75D995A.mp4?e=1662176255&token=QzW5NtLZt4W_-XAOzA7pVf9IS6KeDCpnI4k6fW4S:HfBH5WdahUAg8cg-5xDzpXTIAHs=
+
+
+
+09_支付模块构建(中)
+
+http://p8t8qct2x.bkt.clouddn.com/624901110-DEC6FC63A9A26E41.mp4?e=1663311883
+
