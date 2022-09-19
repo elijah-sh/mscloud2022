@@ -5,6 +5,7 @@ import com.payment.entities.Payment;
 import com.payment.service.PaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +29,7 @@ public class PaymentController {
     public CommonResult create(Payment payment){
 
        int result = paymentService.create(payment);
-       log.info("insert result id {}", result);
+       log.info("insert result id {}， serial ", result);
         if (result > 0) {
             return new CommonResult(200, "insert success", payment);
         } else {
@@ -36,11 +37,11 @@ public class PaymentController {
         }
     }
 
-    @PostMapping(value = "/get/payment/{id}")
+    @GetMapping(value = "/get/payment/{id}")
     public CommonResult getPaymentById(@PathVariable("id") Long id){
 
         Payment payment = paymentService.getPaymentById(id);
-        log.info("get result id {}", payment);
+        log.info("get result id : {} ", payment);
         if (payment != null) {
             return new CommonResult(200, "select success", payment);
         } else {

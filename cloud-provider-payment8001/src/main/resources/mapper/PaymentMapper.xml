@@ -4,15 +4,15 @@
 <mapper namespace="com.payment.dao.PaymentDao">
     
     <resultMap id="BaseResultMap" type="com.payment.entities.Payment">
-        <id column="id" property="id" javaType="BIGINT"/>
-        <id column="serial" property="serial" javaType="VARCHAR"/>
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="serial" property="serial" jdbcType="VARCHAR"/>
     </resultMap>
 
-    <insert id="create" parameterType="Payment" useGeneratedKeys="true" keyProperty="id">
+    <insert id="create" parameterType="com.payment.entities.Payment" useGeneratedKeys="true" keyProperty="id">
         insert into payment (serial) values (#{serial})
     </insert>
 
-    <select id="getPaymentById" parameterType="Long" resultMap="BaseResultMap">
+    <select id="getPaymentById" parameterType="Long" resultType="com.payment.entities.Payment">
         select * from payment where id = #{id};
     </select>
 </mapper>

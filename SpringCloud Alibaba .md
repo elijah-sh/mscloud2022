@@ -469,8 +469,8 @@ mapper
 <mapper namespace="com.payment.dao.PaymentDao">
     
     <resultMap id="BaseResultMap" type="com.payment.entities.Payment">
-        <id column="id" property="id" javaType="BIGINT"/>
-        <id column="serial" property="serial" javaType="VARCHAR"/>
+    <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="serial" property="serial" jdbcType="VARCHAR"/>
     </resultMap>
 
     <insert id="create" parameterType="Payment" useGeneratedKeys="true" keyProperty="id">
@@ -598,7 +598,7 @@ public class PaymentController {
         }
     }
 
-    @PostMapping(value = "/get/payment/{id}")
+    @GetMapping(value = "/get/payment/{id}")
     public CommonResult getPaymentById(@PathVariable("id") Long id){
 
         Payment payment = paymentService.getPaymentById(id);
@@ -614,37 +614,85 @@ public class PaymentController {
 
 
 
+#### 热部署插件
+
+当项目修改代码时,会自动重启项目
+
+热部署只允许在开发环境使用,不然在生产环节以更变代码就重启了
 
 
 
+
+
+1、修改工程pom.xml
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>
+```
+
+
+
+2、修改父工程pom.xml 添加插件plugin
+
+```xml
+<build>
+  <plugins>
+    <plugin>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-maven-plugin</artifactId>
+      <configuration>
+        <fork>true</fork>
+        <addResources>true</addResources>
+      </configuration>
+    </plugin>
+  </plugins>
+</build>
+```
+
+
+
+3、设置idea 代码自动编译 ABCD勾选
+
+4、idea设置 update the value of  搜索registry
+
+compiler.automae.allow.when.app.running 打勾
+
+也看个人习惯,是否去设置
+
+
+
+---
 
 #### 视频地址
 
-06_父工程pom文件
-
-http://p8t8qct2x.bkt.clouddn.com/624901110-0C643DD5609F2D45.mp4?e=1662104416&token=QzW5NtLZt4W_-XAOzA7pVf9IS6KeDCpnI4k6fW4S:x5pw92T20fcxWf9rDrWGlHrYI_c=
 
 
 
 
-
-07_复习DependencyManagement和Dependencies
-
-
-
-http://p8t8qct2x.bkt.clouddn.com/624901110-58B4648802276393.mp4?e=1662106528&token=QzW5NtLZt4W_-XAOzA7pVf9IS6KeDCpnI4k6fW4S:xiTV-14cJKDS-chqhGiPvEFIwkA=
-
-
-
-**08_支付模块构建(上)**
-
-
-
-http://p8t8qct2x.bkt.clouddn.com/624901110-35C3F017D75D995A.mp4?e=1662176255&token=QzW5NtLZt4W_-XAOzA7pVf9IS6KeDCpnI4k6fW4S:HfBH5WdahUAg8cg-5xDzpXTIAHs=
-
-
-
-09_支付模块构建(中)
-
-http://p8t8qct2x.bkt.clouddn.com/624901110-DEC6FC63A9A26E41.mp4?e=1663311883
-
+9,09_支付模块构建(中).mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-DEC6FC63A9A26E41.mp4
+10,10_支付模块构建(下).mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-2FEE19AD64CAC40E.mp4
+11,11_热部署Devtools.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-355C4CE840BDAF3B.mp4
+12,12_消费者订单模块(上).mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-704FC6E0FE0DE190.mp4
+13,13_消费者订单模块(下).mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-0196BFDEA2733941.mp4
+14,14_工程重构.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-CB6969B1704EE8BB.mp4
+15,15_Eureka基础知识.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-19147B7109156C04.mp4
+16,16_EurekaServer服务端安装.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-1D99379832E4E83A.mp4
+17,17_支付微服务8001入驻进eurekaServer.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-3813E2AB6CF8B4C9.mp4
+18,18_订单微服务80入驻进eurekaServer.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-5AFEBED4FAA8D2AA.mp4
+19,19_Eureka集群原理说明.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-575EE1EECCCA31A7.mp4
+20,20_Eureka集群环境构建.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-1A70E31EEEC1E38D.mp4
+21,21_订单支付两微服务注册进Eureka集群.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-F10551083C7C04F2.mp4
+22,22_支付微服务集群配置.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-3AC7DF25927B89D9.mp4
+23,23_actuator微服务信息完善.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-4C3A809402B26662.mp4
+24,24_服务发现Discovery.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-908BBD1EF2F669B3.mp4
+25,25_Eureka自我保护理论知识.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-8A6D31413636FE88.mp4
+26,26_怎么禁止自我保护.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-583161F066353656.mp4
+27,27_Eureka停更说明.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-5DF884B5210CDCFF.mp4
+28,28_支付服务注册进zookeeper.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-15826B3A31C1A8C9.mp4
+29,29_临时还是持久节点.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-EB16DD4F12C88DE1.mp4
+30,30_订单服务注册进zookeeper.mp4,http://p8t8qct2x.bkt.clouddn.com/624901110-7AF26F608806B968.mp4
