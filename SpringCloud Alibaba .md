@@ -1,5 +1,7 @@
 
 
+
+
 #### 微服务架构理论
 
 
@@ -666,7 +668,238 @@ compiler.automae.allow.when.app.running 打勾
 
 
 
----
+#### 订单模版(消费者)
+
+##### 配置代码
+
+新建模块cloud-consumer-order80
+
+
+
+pom.xml
+
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.elijah.cloud</groupId>
+        <artifactId>cloud2022</artifactId>
+        <version>1.0-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+    <groupId>com.elijah.cloud</groupId>
+    <artifactId>cloud-consumer-order80</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cloud-consumer-order80</name>
+    <description>cloud-consumer-order80</description>
+    <properties>
+        <java.version>1.8</java.version>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.24</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.7.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
+</project>
+```
+
+
+
+application.yml
+
+```yaml
+server:
+  port: 80
+```
+
+
+
+主启动类
+
+```java
+@SpringBootApplication
+public class OrderApplication80 {
+
+    public static void main(String[] args) {
+        SpringApplication.run(OrderApplication80.class, args);
+    }
+
+}
+```
+
+
+
+业务代码
+
+复制出支付模版
+
+entities和commonResult
+
+
+
+
+
+##### 业务代码
+
+对于消费者来说 不会有service类来处理逻辑
+
+我们在使用微服务前可以先试用restTemplete
+
+
+
+```java
+package com.order.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+
+/**
+ * @Author: elijah
+ * @Title: ApplicationContextConfig
+ * @Description:
+ * @Date: 2022/9/19 17:42
+ */
+
+@Configuration
+public class ApplicationContextConfig {
+
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
+    // 类似与  application.xml <bean id = "" class="" />
+}
+```
+
+
+
+```java
+package com.order.order.controller;
+
+import com.order.entities.CommonResult;
+import com.order.entities.Payment;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.Resource;
+
+/**
+ * @Author: elijah
+ * @Title: OrderController
+ * @Description:
+ * @Date: 2022/9/19 19:14
+ */
+@RestController
+@Slf4j
+public class OrderController {
+
+    public static final String PAYMENT_URL = "http://127.0.0.1:8001/";
+    @Resource
+    private RestTemplate restTemplate;
+
+    @GetMapping("/consumer/create/payment")
+    public CommonResult<Payment> create(Payment payment) {
+        log.info("consumer {}", payment.getSerial());
+        return restTemplate.postForObject(PAYMENT_URL + "payment/create", payment, CommonResult.class);
+    }
+
+    @GetMapping("/consumer/get/payment/{id}")
+    public CommonResult<Payment> getPayment(@PathVariable("id") Long id) {
+        return restTemplate.getForObject(PAYMENT_URL + "get/payment/" + id, CommonResult.class);
+    }
+
+}
+```
+
+
+
+
+
+到这里同时启动两个服务 就可以调用. 只是当前遇到的问题创建时payment数据不能传递过去,暂时不知道为什么
+
+
+
+
+
+
+
+
+
+
 
 #### 视频地址
 
